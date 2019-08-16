@@ -1,0 +1,26 @@
+ARG NODE_VERSION=12
+
+FROM node:${NODE_VERSION}-alpine AS builder
+ARG DBPORT=5432
+ARG POSTUSER=root
+ARG POSTPASS=root
+ARG DATABASE=db
+
+
+ENV DBPORT=${DBPORT}
+ENV POSTUSER=${POSTUSER}
+ENV POSTPASS=${POSTPASS}
+ENV DATABASE=${DATABASE}
+
+RUN mkdir -p /api
+WORKDIR /api
+
+COPY package.json .
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+ENTRYPOINT [ "npm" ]
+CMD ["run", "start"]
