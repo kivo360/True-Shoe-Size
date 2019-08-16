@@ -14,4 +14,20 @@ The key components for the `nest.js` :
     * This means we can bundle all relavent pieces of code together inside of their own modules. 
 
 
-Some relavant pieces of code you'll read.
+Some relavant pieces of code you'll read:
+
+## Declaring Controllers
+
+Controllers are the main locations where we get requests and return a response. Each controller can have a handle that acts as the fundamental endpoint. For instance, in the following example we'll see that the controller has the handle `cats`. Everything beyond that point is an extension to that. For example `@Get()` is the route `/cats/`. If we use the example `@Get('all')`, the route would be `/cats/all`
+
+```ts
+import { Controller, Get } from '@nestjs/common';
+
+@Controller('cats')
+export class CatsController {
+  @Get()
+  findAll(): string {
+    return 'This action returns all cats';
+  }
+}
+```
