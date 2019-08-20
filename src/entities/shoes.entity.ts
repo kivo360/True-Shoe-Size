@@ -32,6 +32,7 @@ export class ShoeRating {
     @Column('int')
     year: number;
 
+    // @Column('decimal', { precision: 5, scale: 2 })
     @Column()
     shoeSize: number;
     

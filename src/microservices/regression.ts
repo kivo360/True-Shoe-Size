@@ -1,7 +1,9 @@
 import axios from 'axios';
 import { getAddress } from './genericService'
 
-const REGRESSIONHOST = "localhost";
+// Set the variable at a environment variable or a default
+const REGRESSIONHOST = "localhost"; 
+// Set environment variable
 const REGRESSIONPORT = 8000;
 
 
@@ -11,10 +13,13 @@ const REGRESSIONPORT = 8000;
  * @param data - The data we're using to train the regressor
  * @param callback - This is the callback. It explains wether the ML algorithm was trained or not.
  */
-export function trainRegressor(data: {[key: string]: any}, cb: (error: Error, result: any)=>void){
-    axios.post(`${getAddress(REGRESSIONHOST, REGRESSIONPORT, false)}/train`)
-         .then(res=>cb(null, res))
-         .catch((reason) => cb(new Error("Something went wrong"), null))
+export function trainRegressor(data: {[key: string]: any}){
+    return axios.post(`${getAddress(REGRESSIONHOST, REGRESSIONPORT, false)}/train`, data)
+}
+
+
+export function trainRegressorSingle(data: { [key: string]: any }) {
+    return axios.post(`${getAddress(REGRESSIONHOST, REGRESSIONPORT, false)}/train/single`, data)
 }
 
 

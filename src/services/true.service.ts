@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Shoe, ShoeRating } from '../entities/shoes.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import {isNullOrUndefined} from 'util';
+import { isNullOrUndefined } from 'util';
+import { trainRegressor } from '../microservices/regression'
 
 @Injectable()
 export class TrueToSizeCalculation {
@@ -143,7 +144,48 @@ export class TrueToSizeCalculation {
                 
                 insertedData['reason'] = reason.message;
             })
+        
 
+        const sums = await this.shoeRatingRepository
+            .createQueryBuilder("ShoeRating")
+            .select("AVG(ShoeRating.shoeFit)", "truesize")
+            .where("ShoeRating.maker = :maker", { maker: maker })
+            .andWhere("ShoeRating.brand = :brand", { brand: brand })
+            .andWhere("ShoeRating.year = :year", { year: year })
+            .getRawOne();
+        
+        const trainObj = {}
+        trainObj['make'] = maker;
+        trainObj['year'] = year;
+        trainObj['trueSize'] = sums["truesize"];
+        
+        const callObj = {
+            train: [trainObj],
+            pred: []
+        }
+
+        try {
+            trainRegressor(callObj).then(res=>{
+                console.log(res.data);
+                console.log(res.status);
+                console.log(res.statusText);
+                console.log(res.headers);
+                console.log(res.config);
+
+            
+            }).catch((reason)=>{
+                if (reason.response){
+                    console.log(reason.response.data);
+                    console.log(reason.response.status);
+                    console.log(reason.response.headers);
+                }
+            });
+        } catch (error) {
+            console.log(error);
+        }
+        // Send call to micro-service regarding what the sum should be
+        // Send the call to another 
+        
         return insertedData;
     }
 

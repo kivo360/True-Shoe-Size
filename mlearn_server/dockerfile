@@ -1,0 +1,29 @@
+# Dockerfile - this is a comment. Delete me if you want.
+
+FROM python:3.7
+
+
+RUN pip install numpy
+RUN pip install scipy
+RUN apt-get update
+RUN apt-get -y install build-essential  
+RUN  wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
+RUN tar zxvf ta-lib-0.4.0-src.tar.gz
+RUN cd ta-lib && ./configure && make && make install
+
+RUN mkdir /tmp/checkpoint
+
+COPY . /app
+
+WORKDIR /app
+
+RUN pip install -r requirements.txt
+
+RUN chmod +x run.sh
+
+ENV MONGO_HOST="mongo.funguaservices.com"
+
+ENTRYPOINT ["bash", "run.sh"]
+
+# Also, add mongodb host to parameter.
+CMD []
