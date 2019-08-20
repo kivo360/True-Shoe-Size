@@ -1,7 +1,7 @@
 import os
 import time
-import uuid
-import random
+import sys
+
 import argparse
 from loguru import logger
 import numpy as np
@@ -28,13 +28,13 @@ def ml_scoring(model, testX, testY):
     mxerr = max_error(testY, prediction)
     mabserr = mean_absolute_error(testY, prediction)
     r2d2 = r2_score(testY, prediction)
-    mlogerr = mean_squared_log_error(testY, prediction)
+    # mlogerr = mean_squared_log_error(testY, prediction)
 
     return {
         "max_err": mxerr,
         "max_abs_err": mabserr,
-        "r2": r2d2,
-        "mlog": mlogerr
+        "r2": r2d2
+        # "mlog": mlogerr
     }
 
 
@@ -300,14 +300,16 @@ class MemoryPassiveRegressor(MemoizeAndOperate):
                 logger.info("Make scalar not found")
                 return {
                     "prediction": None,
-                    "is_successful": False
+                    "is_successful": False,
+                    "message": "Make scalar is missing"
                 }
             
             if "year_scalar" not in query_keys:
                 logger.info("Year scalar not found")
                 return {
                     "prediction": None,
-                    "is_successful": False
+                    "is_successful": False,
+                    "message": "Year scalar is missing"
                 }
             
 
@@ -319,18 +321,21 @@ class MemoryPassiveRegressor(MemoizeAndOperate):
             if make not in make_labels:
                 make_labels.append(make)
             
-            make_arr = np.array([make])
-            year_arr = np.array([year])
-
-            make_scalar.fit(make_arr)
+            # make_arr = np.array([make])
+            year_arr = np.array([year]).reshape(-1, 1)
+            single_year_np = np.array([[year]])
+            make_scalar.fit(make_labels)
             years_scalar.partial_fit(year_arr)
 
-            m = make_scalar.transform(make)
-            ye = years_scalar.transform(year)
-            X = np.array([m, ye])
+            m = make_scalar.transform([make])
+            ye = years_scalar.transform(single_year_np)
+            print(m)
+            print(ye)
+            X = np.array([m[0], ye[0][0]]).reshape(1, -1)
+            print(X)
             prediction = regressor.predict(X)
             
-            
+            print(prediction)
             
             query_item["model"] = regressor
             query_item["make_scalar"] = make_scalar
@@ -338,28 +343,96 @@ class MemoryPassiveRegressor(MemoizeAndOperate):
             query_item["make_labels"] = make_labels
             
             return {
-                "prediction": prediction,
+                "prediction": prediction[0],
+                "message": "successfully predicted the trueSize",
                 "is_successful": True
             }
         except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             return {
                 "prediction": None,
-                "is_successful": False
+                "is_successful": False,
+                "message": str(e),
+                "exception": {
+                    "filename": fname, 
+                    "line": exc_tb.tb_lineno
+                }
             }
 
 
-    def score(self, query, X, y, **kwargs):
+    def score(self, query, frame, **kwargs):
         # Generate the score for the model in X and Y
         # print(self.query_lookup_table)
         self.check_and_load(query)
         try:
             query_item = self.get_item(query)
             regressor = query_item["model"]
-            score = regressor.score(X, y)
-            return score
+            
+            # make scalar
+            make_scalar = None
+            # year scalar
+            years_scalar = None
+            query_keys = query_item.keys()
+
+            if "make_scalar" not in query_keys:
+                logger.error("Make Scalar doesn't exist")
+                return {
+                    "message": "Error ... scalar not found"
+                }
+            
+            if "year_scalar" not in query_keys:
+                logger.error("Year Scalar doesn't exist")
+                return {
+                    "message": "Error ... scalar not found"
+                }
+
+            y_axis = frame.loc[:, 'trueSize'].to_numpy()
+            frame = frame.drop(columns=['trueSize'])
+            
+            make_scalar = query_item["make_scalar"]
+            years_scalar = query_item["year_scalar"]
+            make_labels = query_item["make_labels"]
+        
+
+            year_shape = frame.year.to_numpy().reshape(-1, 1)
+            
+            for make in frame.make.values:
+                if make not in make_labels:
+                    make_labels.append(make)
+
+            # Partial Fit
+            make_scalar.fit(make_labels)
+            years_scalar.partial_fit(year_shape)
+
+            years = years_scalar.transform(year_shape)
+            frame['make'] = make_scalar.transform(frame.make.values)
+            frame['year'] = years[:, 0].tolist()
+            
+
+
+            x_axis = frame.to_numpy()
+            # Get the scoring information
+            regressor.fit(x_axis, y_axis)
+            score = ml_scoring(regressor, x_axis, y_axis)
+
+            query_item["model"] = regressor
+            query_item["make_scalar"] = make_scalar
+            query_item["year_scalar"] = years_scalar
+            query_item["make_labels"] = make_labels
+
+            
+            # score = 0
+            self.set_item(query, query_item, overwrite=True)
+            return {
+                "score": score,
+                "is_trained": True,
+            }
         except Exception as e:
             print(str(e))
-            return 0.0
+            return {
+                "message": "You done goofed"
+            }
         
     def set_c(self, query: dict, C, **kwargs):
         # Partially train the passive aggressive regressor

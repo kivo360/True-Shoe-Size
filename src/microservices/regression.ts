@@ -28,8 +28,18 @@ export function trainRegressorSingle(data: { [key: string]: any }) {
  * @param data - data we're going to get predictions on. The prediction will be used to determine how the shoe will deviate based on prior assumptions
  * @param cb - The callback for when the results actually come in
  */
-export function predictRegressor(data: { [key: string]: any }, cb: (error: Error, result: any) => void) {
-    axios.post(`${getAddress(REGRESSIONHOST, REGRESSIONPORT, false)}/predict`)
+export function predictRegressor(data: { [key: string]: any }) {
+    return axios.post(`${getAddress(REGRESSIONHOST, REGRESSIONPORT, false)}/pred`, data)
+}
+
+
+/**
+ * Get the prediction of the regressor using the given dictionary.
+ * @param data - data we're going to get predictions on. The prediction will be used to determine how the shoe will deviate based on prior assumptions
+ * @param cb - The callback for when the results actually come in
+ */
+export function scoreRegressor(data: { [key: string]: any }, cb: (error: any, result: any) => void) {
+    axios.post(`${getAddress(REGRESSIONHOST, REGRESSIONPORT, false)}/score`, data)
         .then(res => cb(null, res))
-        .catch((reason) => cb(new Error("Something went wrong"), null))
+        .catch((reason) => cb(reason, null))
 }

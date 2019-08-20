@@ -32,18 +32,26 @@ class MemoryRegressorClient(ServiceClient):
         })
         return trained_response
     
-    def score(self, query, X, y):
+    def score(self, query, frame):
         model_score = self._send({
             "command": "score",
-            "args": [query, X, y],
+            "args": [query, frame],
             "kwargs": {}
         })
         return model_score
 
     def predict(self, query, X):
         prediction = self._send({
-            "command": "predicexe = Exchange(userid, 'pooper', backtest=True, create=True, eid=episode_eid, timestamp=current_time)t",
+            "command": "predict",
             "args": [query, X],
+            "kwargs": {}
+        })
+        return prediction
+
+    def predict_scalar(self, query, make, year):
+        prediction = self._send({
+            "command": "predict_scalar",
+            "args": [query, make, year],
             "kwargs": {}
         })
         return prediction

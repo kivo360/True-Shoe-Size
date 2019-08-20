@@ -3,7 +3,9 @@ import { Shoe, ShoeRating } from '../entities/shoes.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { isNullOrUndefined } from 'util';
-import { trainRegressor } from '../microservices/regression'
+import { trainRegressor, scoreRegressor, predictRegressor } from '../microservices/regression'
+import { groupBy } from 'rxjs/internal/operators/groupBy';
+import { response } from 'express';
 
 @Injectable()
 export class TrueToSizeCalculation {
@@ -31,6 +33,43 @@ export class TrueToSizeCalculation {
         return 0;
     }
 
+
+    async getScore(){
+        let sums = await this.shoeRatingRepository
+            .createQueryBuilder("ShoeRating")
+            .select("maker, year, AVG(ShoeRating.shoeFit)", "trueSize")
+            .groupBy("ShoeRating.maker")
+            .addGroupBy("ShoeRating.year")
+            .getRawMany();
+        
+
+        sums = sums.map(function(element){
+            element["trueSize"] = parseFloat(element["trueSize"])
+            return element;
+        })
+
+        const callObj = {
+            train: sums,
+            pred: []
+        }
+
+        scoreRegressor(callObj, (err, result) => {
+            if (err){
+                if (err.response) {
+                    console.log(err.response.data['detail'][0]['loc']);
+                    console.log(err.response.status);
+                    console.log(err.response.headers);
+                }
+            }else{
+                console.log(result.data);
+                console.log(result.status);
+                console.log(result.statusText);
+                console.log(result.headers);
+                console.log(result.config);
+            }
+        })
+        return sums;
+    }
 
     async createShoe(maker:string, brand:string, year:number) {
         if (year < 1960 && year > new Date().getFullYear()) {
@@ -166,18 +205,18 @@ export class TrueToSizeCalculation {
 
         try {
             trainRegressor(callObj).then(res=>{
-                console.log(res.data);
-                console.log(res.status);
-                console.log(res.statusText);
-                console.log(res.headers);
-                console.log(res.config);
+                // console.log(res.data);
+                // console.log(res.status);
+                // console.log(res.statusText);
+                // console.log(res.headers);
+                // console.log(res.config);
 
             
             }).catch((reason)=>{
                 if (reason.response){
-                    console.log(reason.response.data);
-                    console.log(reason.response.status);
-                    console.log(reason.response.headers);
+                    // console.log(reason.response.data);
+                    // console.log(reason.response.status);
+                    // console.log(reason.response.headers);
                 }
             });
         } catch (error) {
@@ -210,13 +249,27 @@ export class TrueToSizeCalculation {
             .andWhere("ShoeRating.year = :year", { year: year })
             .getRawOne();
         
-        if (!isNullOrUndefined(sums)){
+        if (!isNullOrUndefined(sums['truesize'])){
             responseData['message'] = `Successfully retrived the truesize for the shoe ${brand} made by ${make} in the year ${year}`
             responseData['data'] = sums
         }else{
             // Search the micro-service to find if you can get an estimate.
+            // check for a prediction
+            const derp = await predictRegressor({
+                make: make, 
+                year: year
+            }).then(res => {
+                responseData['message'] = `We were able to estimate the number of responses`
+                responseData['data'] = res
+                return responseData
+            }).catch((reason) => {
+                if (reason.response) {
+                    // console.log(reason.response.data);
+                    // console.log(reason.response.status);
+                    // console.log(reason.response.headers);
+                }
+            });
             responseData['message'] = `We weren't able to find the truesize of the shoe ${brand} made by ${make} in the year ${year}`
-            responseData['data'] = {}
         }
 
         return responseData;

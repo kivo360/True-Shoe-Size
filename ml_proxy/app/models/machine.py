@@ -14,9 +14,18 @@ class TrainingModel(BaseModel):
     year: int
     trueSize: float
 
-
+class TrainingModelOrg(BaseModel):
+    maker: str
+    year: int
+    trueSize: float
 
 
 class ModelData(BaseModel):
     pred: List[PredictionModel] = []
     train: List[TrainingModel] = []
+
+
+
+class NewFakeData(BaseModel):
+    pred: List[PredictionModel] = []
+    train: List[TrainingModelOrg] = []

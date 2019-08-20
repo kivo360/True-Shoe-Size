@@ -30,22 +30,31 @@ class MemoryRegressorClient(ServiceClient):
         })
         return trained_response
 
-    def score(self, query, X, y):
+    def score(self, query, frame):
         model_score = self._send({
             "command": "score",
-            "args": [query, X, y],
+            "args": [query, frame],
             "kwargs": {}
         })
         return model_score
 
     def predict(self, query, X):
         prediction = self._send({
-            "command": "predicexe = Exchange(userid, 'pooper', backtest=True, create=True, eid=episode_eid, timestamp=current_time)t",
+            "command": "predict",
             "args": [query, X],
             "kwargs": {}
         })
         return prediction
     
+    def predict_scalar(self, query, make, year):
+        prediction = self._send({
+            "command": "predict_scalar",
+            "args": [query, make, year],
+            "kwargs": {}
+        })
+        return prediction
+    
+
     def train_score_predict(self, query:dict, X, y, X_pred, **kwargs):
         """ Train and score"""
         prediction = self._send({
@@ -338,7 +347,7 @@ if __name__ == "__main__":
 
     # Create a bunch of shoes
     
-    num_of_iters = 1700
+    num_of_iters = 2800
     sizecalls = []
     for index in range(num_of_iters):
         
@@ -367,6 +376,20 @@ if __name__ == "__main__":
 
     for creation in sizecalls:
         call = session.post(f"{address}/true/addsize", json=creation)
+        if random.uniform(0, 1) < 0.01:
+            call_score = session.get(f"{address}/true/score")
+            print(call_score.result().json())
+            time.sleep(0.05)
+        if random.uniform(0, 1) < 0.02:
+            user_id = random.randint(1, 12000)
+            year = random.randint(1960, 2019)
+            make = random.choice(makes)
+            call_val = create_request_call(make, year, dist_by_make, dist_by_year)
+            call_val["brand"] = "brand{}".format(random.randint(40, 1000))
+
+            call_predict = session.post(f"{address}/true/single", json=call_val)
+            print(call_predict.result().json())
+            time.sleep(5)
         print(call.result().json())
 
 

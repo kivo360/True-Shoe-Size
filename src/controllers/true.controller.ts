@@ -37,10 +37,23 @@ export class TrueController {
      * @param request 
      * @param singleShoe 
      */
-    @Get("single")
+    @Post("single")
     findSingleTrueCalaculation(@Req() request: Request, @Body() singleShoe: CreateShoe): { [key: string]: any } {
         return this.trueService.getTrueShoeSize(singleShoe.maker, singleShoe.brand, singleShoe.year);
     }
 
+    /**
+     * 
+     * @param request 
+     * @param singleShoe 
+     */
+    @Get("score")
+    findMLScore(@Req() request: Request): { [key: string]: any } {
+        return this.trueService.getScore();
+    }
+
+
+
+    
     
 }
