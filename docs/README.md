@@ -31,20 +31,3 @@ export class CatsController {
   }
 }
 ```
-
-
-
-
-## Real-time Testing Using Python
-To test the flow of the application `real-time`. I use python to make thousands of requests to the main app. I primarily use the `requests_futures` library. It works in much the same way as `node.js` event loop. It starts a request to a remote service and creates a future, which allows one to start more tasks prior to them being completed later.
-
-
-### Creating the Data
-
-#### Combinatorics
-
-#### Generating the Data
-
-#### Iterating Through Scenarios
-
-#### Periocially Create Something Where The Brand Hasn't Been Seen
