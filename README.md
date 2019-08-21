@@ -118,7 +118,7 @@ postgres-# \conninfo
 postgres-# \q
 ```
 
-After running running the following, you should be able to run root.
+After running running the following, you should be able to run the `node.js` app as root in `postgresql`.
 
 ## Installation Guide for Machine Learning
 
@@ -198,8 +198,8 @@ Please follow the tutorial for accessing your files:
 > https://www.howtogeek.com/261383/how-to-access-your-ubuntu-bash-files-in-windows-and-your-windows-system-drive-in-bash/
 
 
-## Finishing Setup
-Now, enter into the two separate folders and install
+### Finishing Setup
+Now, enter into the two separate folders and install the required packages for the machine learning.
 
 To install all of the dependencies: **Run:** 
 
@@ -211,8 +211,8 @@ $ pipenv install -e .
 This installs all of the main dependencies for the project. Follow that with: `pipenv shell` in the main directory to enter into the project's virtual environment.
 
 
-### How to Run
-To run the necessary test, you'll need to first get IAM keys for s3 (to test s3 functionality). The keys need to have s3 access and be stored in `~/.aws/credentials`
+### How to Run `S3`
+To run the necessary test, you'll need to first get IAM keys for s3 (to test s3 functionality). The keys need to have s3 access and be stored in `~/.aws/credentials`. 
 
 ### Test Methods
 

@@ -2,7 +2,7 @@
 
 This project was built using the framework `nest`. 
 
-The entire idea of the `nest` framework is that it takes and abstracts away everything from `express.js` and `fastify.js` for easy creation of APIs on `typescript`. They have some pieces available to allow for extremely loosely coupled via robust microservices.
+The entire idea of the `nest` framework is that it takes and abstracts away everything from `express.js` and `fastify.js` for easy creation of APIs on `typescript`. They have some pieces available to allow for extremely loosely coupled via robust microservices. To understand how the machine learning service works. Visit this document [here](how-it-works.md).
 
 
 The key components for the `nest.js` :
@@ -31,3 +31,20 @@ export class CatsController {
   }
 }
 ```
+
+
+
+
+## Real-time Testing Using Python
+To test the flow of the application `real-time`. I use python to make thousands of requests to the main app. I primarily use the `requests_futures` library. It works in much the same way as `node.js` event loop. It starts a request to a remote service and creates a future, which allows one to start more tasks prior to them being completed later.
+
+
+### Creating the Data
+
+#### Combinatorics
+
+#### Generating the Data
+
+#### Iterating Through Scenarios
+
+#### Periocially Create Something Where The Brand Hasn't Been Seen
