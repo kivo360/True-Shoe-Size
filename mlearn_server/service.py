@@ -329,13 +329,10 @@ class MemoryPassiveRegressor(MemoizeAndOperate):
 
             m = make_scalar.transform([make])
             ye = years_scalar.transform(single_year_np)
-            print(m)
-            print(ye)
+    
             X = np.array([m[0], ye[0][0]]).reshape(1, -1)
-            print(X)
             prediction = regressor.predict(X)
             
-            print(prediction)
             
             query_item["model"] = regressor
             query_item["make_scalar"] = make_scalar
@@ -343,9 +340,9 @@ class MemoryPassiveRegressor(MemoizeAndOperate):
             query_item["make_labels"] = make_labels
             
             return {
-                "prediction": prediction[0],
-                "message": "successfully predicted the trueSize",
-                "is_successful": True
+                'prediction': prediction[0],
+                'message': "successfully predicted the trueSize",
+                'is_successful': True
             }
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()

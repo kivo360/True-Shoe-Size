@@ -4,11 +4,11 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { isNullOrUndefined } from 'util';
 import { trainRegressor, scoreRegressor, predictRegressor } from '../microservices/regression'
-import { groupBy } from 'rxjs/internal/operators/groupBy';
-import { response } from 'express';
+import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class TrueToSizeCalculation {
+    private readonly logger = new Logger(TrueToSizeCalculation.name);
 
     constructor(
         @InjectRepository(Shoe)
@@ -16,22 +16,6 @@ export class TrueToSizeCalculation {
         @InjectRepository(ShoeRating)
         private readonly shoeRatingRepository: Repository<ShoeRating>,
     ) { }
-
-    /**
-     * Get the true to size calculation for the given model
-     * returns: The latest calculation for the given shoe
-     */
-    getCalculation(maker: string, brand: string, year: number): number {
-        // Check to see if the year is within the bounds of normal
-        // This is a filtration check
-        if (year < 1950 || year > new Date().getFullYear()) {
-            throw new TypeError("The year is not within the correct range 1960 - 2019 (now)");
-        }
-
-        // Call to an outside service to get the general calculation
-
-        return 0;
-    }
 
 
     async getScore(){
@@ -56,16 +40,8 @@ export class TrueToSizeCalculation {
         scoreRegressor(callObj, (err, result) => {
             if (err){
                 if (err.response) {
-                    console.log(err.response.data['detail'][0]['loc']);
-                    console.log(err.response.status);
-                    console.log(err.response.headers);
+                    this.logger.error(err.response.data['detail']);
                 }
-            }else{
-                console.log(result.data);
-                console.log(result.status);
-                console.log(result.statusText);
-                console.log(result.headers);
-                console.log(result.config);
             }
         })
         return sums;
@@ -180,7 +156,7 @@ export class TrueToSizeCalculation {
                     insertedData['status'] = 500;
                     insertedData['message'] = "There was an error on our end!!!";
                 }
-                
+                this.logger.error(reason.message);
                 insertedData['reason'] = reason.message;
             })
         
@@ -205,22 +181,13 @@ export class TrueToSizeCalculation {
 
         try {
             trainRegressor(callObj).then(res=>{
-                // console.log(res.data);
-                // console.log(res.status);
-                // console.log(res.statusText);
-                // console.log(res.headers);
-                // console.log(res.config);
-
-            
             }).catch((reason)=>{
                 if (reason.response){
-                    // console.log(reason.response.data);
-                    // console.log(reason.response.status);
-                    // console.log(reason.response.headers);
+                    this.logger.error(reason.response.message)
                 }
             });
         } catch (error) {
-            console.log(error);
+            // console.log(error);
         }
         // Send call to micro-service regarding what the sum should be
         // Send the call to another 
@@ -248,28 +215,26 @@ export class TrueToSizeCalculation {
             .andWhere("ShoeRating.brand = :brand", { brand: brand })
             .andWhere("ShoeRating.year = :year", { year: year })
             .getRawOne();
-        
+            
+
         if (!isNullOrUndefined(sums['truesize'])){
             responseData['message'] = `Successfully retrived the truesize for the shoe ${brand} made by ${make} in the year ${year}`
             responseData['data'] = sums
         }else{
             // Search the micro-service to find if you can get an estimate.
             // check for a prediction
-            const derp = await predictRegressor({
+            await predictRegressor({
                 make: make, 
                 year: year
             }).then(res => {
                 responseData['message'] = `We were able to estimate the number of responses`
-                responseData['data'] = res
-                return responseData
+                responseData['data'] = res.data.data.data;
             }).catch((reason) => {
                 if (reason.response) {
-                    // console.log(reason.response.data);
-                    // console.log(reason.response.status);
-                    // console.log(reason.response.headers);
+                    responseData['message'] = `We weren't able to find the truesize of the shoe ${brand} made by ${make} in the year ${year}`
+                    this.logger.error("Remember to place stuff here");
                 }
             });
-            responseData['message'] = `We weren't able to find the truesize of the shoe ${brand} made by ${make} in the year ${year}`
         }
 
         return responseData;
