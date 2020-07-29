@@ -97,7 +97,7 @@ tornado==6.0.3
 tzlocal==2.0.0
 ujson==1.35 ; extra == 'all'
 urllib3==1.25.3 ; python_version >= '3.4'
-uvicorn==0.8.6 ; extra == 'all'
+uvicorn==0.11.7 ; extra == 'all'
 uvloop==0.12.2 ; sys_platform != 'win32' and sys_platform != 'cygwin' and platform_python_implementation != 'pypy'
 wcwidth==0.1.7
 websockets==7.0
