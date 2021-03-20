@@ -44,7 +44,7 @@ immutables==0.9
 importlib-metadata==0.19 ; python_version < '3.8'
 influxdb==5.2.2
 itsdangerous==1.1.0 ; extra == 'all'
-jinja2==2.10.1 ; extra == 'all'
+jinja2==2.11.3 ; extra == 'all'
 jmespath==0.9.4
 joblib==0.13.2
 locket==0.2.0
