@@ -1,4 +1,4 @@
--i https://pypi.org/simple
+-i https://pypi.org/simple/
 arctic-latest==1.75.0
 arctic==1.79.2
 atomicwrites==1.3.0
@@ -70,7 +70,7 @@ noisyopt==0.2.2
 notebook==5.7.8
 numba==0.44.1
 numpy==1.16.4
-packaging==19.1
+packaging==20.9
 pandas==0.24.2
 pandocfilters==1.4.2
 parso==0.5.1
@@ -126,7 +126,7 @@ tornado==6.0.3
 tqdm==4.32.2
 traitlets==4.3.2
 tzlocal==1.5.1
-urllib3==1.25.3
+urllib3==1.25.8
 uvicorn==0.8.4
 uvloop==0.12.2
 wcwidth==0.1.7
